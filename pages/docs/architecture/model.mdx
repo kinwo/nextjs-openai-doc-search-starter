@@ -1,0 +1,24 @@
+# Model
+
+BeamFi has 3 major [models](https://github.com/BeamFi/BeamFiProtocol/tree/main/backend/model): `BeamOutType`, `BeamType` and `EscrowType`
+
+`BeamOutType` is used for creating unique Beam Link URLs which the creator can share with others to receive money.
+See the feature at https://beamfi.app/getpaid.
+
+`BeamType` represents a streaming payment created by buyers when they deposit payment to BeamFi to stream to creators as set in BeamOutType.
+It stores the streaming-related data e.g. start date, end date, beam rate and status. However, it has no information about the actual payment token type.
+
+`EscrowType` is where the actual payment token is deposited to. It contains BeamEscrowContract which stores the token type, amount, buyer and recipient's principal address, the token allocation for each party and how much tokens have been claimed. It has no information and control about the streaming data.
+It also carries the important responsibility of taking ownership of the payment token and distributing it to the right parties through the BeamEscrow service.
+
+In the `escrow` folder, there are also token-specific models for ICP, XTC and even BTC for future extension.
+
+## Folder Structure
+
+Each model type is usually accompanied by a store helper for persistence.
+
+import Image from "next/image"
+
+<div style={{ paddingTop: "22px" }}>
+  <Image src="/folder-model.png" alt="Model Folder" width={206} height={500} />
+</div>

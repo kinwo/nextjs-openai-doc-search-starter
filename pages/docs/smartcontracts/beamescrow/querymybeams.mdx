@@ -1,0 +1,50 @@
+# Query list of BeamEscrows owned by the caller
+
+After creating BeamEscrow EscrowContract, either the sender or the recipient can look up the BeamEscrowContracts owned by them.
+
+```js
+public query ({ caller }) func queryMyBeams() : async [BeamEscrowContract]
+```
+
+Run the following in the command line as the sender identity principal:
+
+```bash
+dfx canister call beamescrow queryMyBeams
+```
+
+It will return a list of BeamEscrowContracts owned by the caller in vector records format.
+
+```js
+(
+  vec {
+    record {
+      id = 0 : nat32;
+      buyerClaimable = 0 : nat64;
+      createdAt = 1_682_665_947_905_076_000 : int;
+      escrowAmount = 990_263_000 : nat64;
+      initialDeposit = 1_000_000_000 : nat64;
+      creatorClaimed = 0 : nat64;
+      updatedAt = 1_682_666_421_213_788_000 : int;
+      creatorPrincipal = principal "om674-h2bcd-bhoxu-2deg5-lqfv5-w7kea-oqsa2-rhtqu-o5jih-5xfc7-qae";
+      buyerPrincipal = principal "ktaun-mznjo-4w2qi-von4m-qodwj-hpm4t-d4yoo-dkzvz-7al2r-px72c-gae";
+      tokenType = variant { icp };
+      buyerClaimed = 0 : nat64;
+      creatorClaimable = 9_737_000 : nat64;
+    };
+  },
+)
+```
+
+import { Callout } from "nextra-theme-docs"
+
+<Callout type="warning" emoji="⚠️">
+  Note that although this method is public, it will only return
+  BeamEscrowContracts owned by the caller, not the others.
+</Callout>
+
+If you switch to recipient identity and run the same command, it should return the same BeamEscrowContracts.
+
+```bash
+dfx identity use recipient1
+dfx canister call beamescrow queryMyBeams
+```

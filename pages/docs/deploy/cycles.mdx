@@ -1,0 +1,61 @@
+# Manage Cycles used by Canisters
+
+Unlike smart contracts in Ethereum and other blockchains, Canisters in Internet Computer are executed in [Cycles](https://internetcomputer.org/capabilities/reverse-gas/) which are paid by developers, not the end users. Cycles are a measure of computation and storage resources consumed by a Canister. When a new Canister is created, it is assigned a certain number of cycles usually 4TC (4000000000000) deducted from your identity's Cycles Wallet. The number of cycles assigned to a Canister is called the Canister’s balance. The balance of a canister is decremented as the Canister consumes cycles when processing updates ~ transactions.
+
+import { Callout } from "nextra-theme-docs"
+
+<Callout type="info" emoji="ℹ️">
+  Note that query to Canisters is free and won't consume cycles.
+</Callout>
+
+You can check the balance of a Canister using the following command:
+
+For example, to check the balance of the beam Canister:
+
+```bash
+dfx canister --network ic status beam
+```
+
+You can also use Canister ID.
+
+```bash
+dfx canister --network ic status 2ekax-oqaaa-aaaah-qc6qa-cai
+```
+
+When the number of Canisters deployed increases, it becomes difficult to manage the cycles used by each Canister. That is why we developed a [Cycles Top Up script](https://github.com/BeamFi/BeamFiProtocol/blob/main/scripts/topup-canisters.js) program to top up the cycles of each Canister and automated it in GitHub Actions workflow as a scheduled job.
+
+## Top-up Cycles of Canisters
+
+Our `Cycles Top Up` script will top up the cycles of all the Canisters as indicated in `canister_ids.json` when their Cycles are below the threshold - currently `4TC` (4000000000000). It will transfer `2TC` (2000000000000) to the Canister. You can run the script manually or schedule it as a job in [GitHub Actions](https://github.com/BeamFi/BeamFiProtocol/blob/main/.github/workflows/topupprod.yml) like what we do.
+
+The source of Cycles comes from the Cycles Wallet of the dfx identity running the script. It is important to make sure that the Cycles Wallet has enough cycles to top up the Canisters. You can check the balance of the Cycles Wallet using the following command:
+
+```bash
+dfx wallet --network ic balance
+```
+
+To run the script at [`./scripts/topup-canisters.js`](https://github.com/BeamFi/BeamFiProtocol/blob/main/scripts/topup-canisters.js):
+
+Switch to the dfx identity that has enough cycles to top up the Canisters.
+
+For example, to switch to the dfx identity `icprod`:
+
+```bash
+dfx identity use icprod
+```
+
+Then run the script:
+
+```bash
+npm run topup
+```
+
+## Schedule Top-Up Cycles of Canisters
+
+To schedule the `Cycles Top Up` script, you can use GitHub Actions workflow. For example, we have a [GitHub Actions workflow - .github/workflows/topupprod.yml](https://github.com/BeamFi/BeamFiProtocol/blob/main/.github/workflows/topupprod.yml).
+
+All you need to do is to configure GitHub Actions secret `DFX_IDENTITY_PROD` and `DFX_WALLETS_PROD` which you probably already have if you followed the [Setup CI/CD pipeline](/docs/deploy/cicd)
+
+## Manage your Cycles Wallet
+
+With the `Cycles Top Up` script, it will significantly reduce your DevOps tasks to manage the Cycles of your Canisters. However, you still need to manage the one single Cycles Wallet to make sure it has enough Cycles to top up the Canisters.

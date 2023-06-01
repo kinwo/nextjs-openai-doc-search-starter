@@ -1,0 +1,29 @@
+# BeamFi Meeting App
+
+BeamFi comes with a separate [BeamFi Meeting App](https://meeting.beamfi.app/) that can be used to join meetings. The meeting app is powered by [Zoom Web SDK - Component View](https://marketplacefront.zoom.us/sdk/meeting/web/components/index.html). The meeting app is a thin client that connects to the BeamFi smart contract and Zoom system to join meetings and stream tokens to the meeting host.
+
+However, to use the meeting app, you start from the main BeamFi App where we have [New Meeting](https://beamfi.app/newmeeting) request button to create a meeting link. The meeting link is a unique URL that can be shared with other users to join the meeting once the other user has deposited the tokens for streaming.
+
+The meeting host will also need to add [`BeamFi Meeting App` in Zoom Marktplace](https://marketplace.zoom.us/apps/sjH1I9WvT4O7Si2R61bbSg) to their Zoom account. This is a one-time process to allow the BeamFi system to communicate with the Zoom system. When the meeting has started, Zoom will notify BeamFi smart contract to start streaming tokens to the meeting host. The meeting host can then use the BeamFi App to check and claim tokens.
+
+To better understand how BeamFi Meeting App works, you can watch the video below.
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/85TWP4QHHBg"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+To get you started using BeamFi Meeting App, we have created a [`Getting Started`](https://beamfi.freshdesk.com/support/solutions/folders/51000336019) guide.
+
+## Local Development
+
+If you are interested in running BeamFi Meeting App in your local environment, you can follow the steps in the [Git Repository](https://github.com/kinwo/BeamFiMeeting).
+
+BeamFi Meeting App utilizes the Turborepo monorepo structure and Turbopack for high-performance builds. It is built using NextJS, React and Typescript and is hosted on Vercel.
+
+Also, make sure you run the apps/web in http://localhost:3001 and apps/api in http://localhost:3002. This is to ensure that BeamFi App can communicate with BeamFi Meeting App and its API.

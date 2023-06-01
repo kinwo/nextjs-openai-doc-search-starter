@@ -1,0 +1,81 @@
+# Service (Actor)
+
+[`BeamFi Services`](https://github.com/BeamFi/BeamFiProtocol/tree/main/backend/service) is where the external facing API would be exposed. They are responsible for handling the requests and responses from the external world including HTTPS requests. They are also responsible for handling the internal communication between the actors in Internet Computer.
+
+It also looks after the data store and persistence layer using Motoko's [Orthogonal Persistence](https://internetcomputer.org/docs/current/motoko/main/motoko#orthogonal-persistence). That means the data is persisted in the actor itself and not in a separate database.
+
+To keep things simple, all stores utilize [Trie - Functional key-value hash map](https://internetcomputer.org/docs/current/motoko/main/base/Trie) for quick indexing and retrieval. The Trie is persisted in the actor itself. A good example is in [BeamOut.mo](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/service/BeamOut.mo) :
+
+```java
+stable var beamOutStoreV4 : BeamOutStoreV4 = Trie.empty();
+
+
+public func createBeamOut(amount : TokenAmount, tokenType : TokenType, recipient : Principal, durationNumMins : Nat32) : async Result<BeamOutId, ErrorCode> {
+  // Generate 9 digits random id
+  let opId = await NumberUtil.generateRandomDigits(9);
+  let id = switch opId {
+    case null return #err(#invalid_id("Problem encountered when generating random id"));
+    case (?myId) myId
+  };
+
+  // Create BeamOutModel
+  let beamOut = BeamOutType.createBeamOut(id, tokenType, amount, recipient, durationNumMins);
+
+  // Check if there is duplicate id
+  let found = BeamOutStoreHelper.findBeamOutById(beamOutStoreV4, id);
+  if (not Option.isNull(found)) {
+    return #err(#duplicated_id("Duplicated id is found"))
+  };
+
+  // Persist BeamOutModel to store
+  beamOutStoreV4 := BeamOutStoreHelper.updateBeamOutStore(beamOutStoreV4, beamOut);
+
+  #ok(beamOut.id)
+};
+
+
+public query func loadBeamOutById(id : BeamOutId) : async Result<BeamOutModelV4, ErrorCode> {
+  let beamOut = BeamOutStoreHelper.findBeamOutById(beamOutStoreV4, id);
+  switch beamOut {
+    case null return #err(#invalid_id("Beam out id not found"));
+    case (?myBeamOut) return #ok(myBeamOut)
+  }
+};
+```
+
+Notice the service layer delegates calls to the helper functions in [BeamOutStoreHelper.mo](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/model/beam/BeamOutStoreHelper.mo) to perform the actual CRUD operations on the Trie. And BeamOutType to create the BeamOutModel. This is to keep the service layer clean and simple.
+
+## BeamOut
+
+BeamOut is responsible for creating and loading the Beam Unique Link. Very simple actor. It also exposes HTTPS /metric and /health for monitoring like using UptimeRobot service.
+
+## Beam
+
+[Beam](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/service/Beam.mo) is the central piece of BeamFi. It manages the creation of the beam, streaming allocation update for each party, stopping, restarting, permission check and persistence. There are 2 types of Beams:
+
+- Beam: Simple beam for peer-to-peer streaming
+- RelationBeam: Beam with relation object ID for linkage to other objects e.g Zoom Meeting details
+
+It is differentiated by BeamType variants in [BeamType model](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/model/beam/BeamType.mo#L43).
+
+It also exposes HTTPS /metric and /health for monitoring and /zoom for Zoom Events Subscription Webhooks.
+
+## BeamEscrow
+
+[BeamEscrow](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/service/BeamEscrow.mo) is a money keeper in BeamFi. It is where EscrowContract between the sender and recipient is stored. It keeps track of the allocation of the token asset owned by each party. Each BeamType has a 1:1 relationship with EscrowContract. It ensures the mathematical correctness of the contract whenever Beam service updates its allocation. It is where self-custody of the token asset is implemented as this actor will have direct ownership in the token ledger (ICP / XTC). It is also where the token implementation is abstracted away from the Beam service. It is also responsible for the token transfer to the recipient when the token is claimed.
+
+It implements a various number of measures to ensure the smart contract is safe during creating EscrowContract:
+
+- [Escrow Solvenvy Check](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/BeamEscrow.mo#L176)
+
+- [Escrow Contract Invariants Check](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/BeamEscrow.mo#L199)
+
+It follows a blockchain pattern `Checks-Effects-Interactions-Rollback` in all the main functions to ensure the contract is safe and sound.
+
+- [creatorClaimByPrincipal](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/BeamEscrow.mo#L288)
+
+One of the most important functions is [privateUpdateEscrowAllocation](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/BeamEscrow.mo#LL507C8-L507C37). It updates escrow contract allocation percentage for BeamEscrow actor, creator and buyer based on the request from Beam service actor. It also takes into account overflow, invariants check and validation check.
+
+## MonitorAgent
+
+[MonitorAgent](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/service/MonitorAgent.mo) serves the purpose of monitoring the BeamFi protocol token solvency. At the moment, it supports ICP and XTC tokens. BTC token is in the alpha stage. What it does is verify all Contracts tokens for example ICP is smaller or equal to actual ICP tokens owned by BeamEscrow canister as reported by the ICP ledger. It returns an error if it fails. It exposes HTTPS API /icp, /xtc for use by external monitoring services like UptimeRobot to regularly ping the HTTPS endpoint and notify admin support if it fails.

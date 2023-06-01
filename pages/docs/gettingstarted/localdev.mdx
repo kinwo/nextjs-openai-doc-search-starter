@@ -1,0 +1,48 @@
+# Setup Local Development Development
+
+## Development Environment Setup
+
+- Install [NodeJS 16.19 or higher](https://nodejs.org/en/download).
+
+If you have [NVM - Node Version Manager](https://github.com/nvm-sh/nvm) installed, you can run the following command to install the correct version of NodeJS:
+
+```
+> nvm use
+```
+
+- VSCode Editor
+
+Install [VSCode](https://code.visualstudio.com/download) if you haven't.
+
+Install Extensions: [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode), [Motoko](https://marketplace.visualstudio.com/items?itemName=dfinity-foundation.vscode-motoko)
+
+- DFX CLI - Install the specific version 0.13.1
+
+```
+> DFX_VERSION=0.13.1
+> sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+```
+
+- Vessel - Motoko Package Management Tools  
+  Follow the instructions from https://github.com/dfinity/vessel to download the binary for your platform. Put the binary in your PATH e.g /usr/local/bin .
+
+[Lear more](/docs/architecture/package) about how BeamFi use Vessel to install 3rd party Motoko packages
+
+## Run local IC replicas
+
+Open a separate new command line Terminal
+
+```
+> dfx start
+```
+
+## Setup Environment Config
+
+To avoid unnecessary direct dependencies and circular dependencies in Motoko, the canister IDs are kept in backend/config/Env.mo.
+Note that the canister IDs are different for local development and production deployment.
+
+For local development, simply use the preconfigured EnvLocal.txt.
+
+```
+> cp guide/EnvLocal.txt backend/config/Env.mo
+```

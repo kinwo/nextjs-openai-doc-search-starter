@@ -1,0 +1,88 @@
+# Create a simple Beam EscrowContract with ICP tokens
+
+The best way to experience creating BeamEscrow is to use DFX command line. We can't use Candid UI because it doesn't support caller identity from the web frontend.
+
+## DFX Command Line
+
+You can call the API directly from `dfx` command line. Sample commands can be found in [automated test scripts](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/test/test-claim-reentrancy.sh).
+
+## Create BeamEscrow EscrowContract
+
+`createBeamEscrow` is the top-level service call to BeamFi. It will create an EscrowContract, BeamModel (by calling Beam Canister) and return the EscrowId. The EscrowId is the unique identifier for the EscrowContract.
+
+```js
+public shared ({ caller }) func createBeamEscrow(
+  escrowAmount : TokenAmount,
+  tokenType : TokenType,
+  blockIndex : BlockIndex,
+  dueDate : Time,
+  buyerPrincipal : Principal,
+  creatorPrincipal : Principal
+) : async Result<EscrowId, ErrorCode>
+```
+
+Before calling `createBeamEscrow`, the caller needs to transfer the specified amount `escrowAmount` of tokens `tokenType` from their wallet which could be `dfx` command line, [Plug Wallet](https://plugwallet.ooo/) or [NFID Wallet](https://nfid.one/), etc.
+
+After the transfer, record the blockIndex number and use it as input to `createBeamEscrow`.
+
+For example, if you are using `dfx` command line, you can run the following command to check your ICP balance:
+
+```bash
+dfx ledger balance --ledger-canister-id $(dfx canister id ledger) $(dfx ledger account-id)
+```
+
+Run the following command to transfer 10 ICP tokens to the BeamEscrow canister:
+
+```bash
+dfx ledger transfer --ledger-canister-id $(dfx canister id ledger) --amount 10 --memo 2147483647 $(dfx ledger account-id --of-canister beamescrow)
+```
+
+import { Callout } from "nextra-theme-docs"
+
+<Callout type="warning" emoji="⚠️">
+  Notes: Memo must be number. We use 2147483647 here. You can use any number for
+  your own reference.
+</Callout>
+
+After the transfer, it will return:
+
+```
+Transfer sent at BlockHeight: 1
+```
+
+Record the blockheight. It will be used as input to `createBeamEscrow`
+
+`escrowAmount` is E8S format with a base of 8 zeros meaning for ICP e.g 1 ICP = 100000000 E8S. For XTC, it is base of 12.
+`tokenType` is either `icp` or `xtc`.
+
+`buyerPrincipal` is your Principal ID which you can get from:
+
+```bash
+dfx identity get-principal
+```
+
+`creatorPrincipal` is the Principal ID of the recipient which you can get by creating a new identity running the following in command line:
+
+```bash
+dfx identity new recipient1
+dfx identity use recipient1
+dfx identity get-principal
+```
+
+That will give you a new identity and Principal ID. You can use that Principal ID as the recipient.
+
+`dueDate` is the target completion date of the payment streaming in epoch UTC in nanoseconds.
+
+Run the following cmd to create a BeamEscrow EscrowContract with 10 ICP tokens, block index 1, due date 2023-05-27 15:49:15 UTC, buyerPrincipal is your Principal ID and creatorPrincipal is the recipient1 Principal ID.
+
+```bash
+dfx canister call beamescrow createBeamEscrow "(1000000000, variant { icp }, 1, 1682714555000000000, principal \"ktaun-mznjo-4w2qi-von4m-qodwj-hpm4t-d4yoo-dkzvz-7al2r-px72c-gae\", principal \"om674-h2bcd-bhoxu-2deg5-lqfv5-w7kea-oqsa2-rhtqu-o5jih-5xfc7-qae\")"
+```
+
+It will return the EscrowId in the format:
+
+```
+(variant { ok = 0 : nat32 })
+```
+
+0 is the EscrowId

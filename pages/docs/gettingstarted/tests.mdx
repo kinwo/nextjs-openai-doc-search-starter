@@ -1,0 +1,107 @@
+# Verify - Run Automated Test Scripts
+
+To verify your deployed BeamFi Canisters are running properly, a couple of automated tests are provided. It was automated as part of the BeamFi Continuous Integration process in GitHub, but you can also run it locally.
+
+## Test - Restart Beam
+
+This test will verify that the new beam can be stopped and restarted without any issues.
+
+You will need ICP tokens. The good news is 100 ICP is minted to the default account when the local ICP ledger canister is deployed.
+
+To run:
+
+```bash
+./backend/test/test-restart-beam.sh
+```
+
+### Main Flow
+
+Please follow [`runTest`](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/test/test-restart-beam.sh#L145) in [test-restart-beam.sh](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/test/test-restart-beam.sh) for the main flow.
+
+import { Steps } from 'nextra-theme-docs'
+ 
+<Steps>
+ 
+### Create Beam
+It will transfer ICP tokens from the default identity to the BeamEscrow Canister.  
+Then it calls `BeamEscrow.createBeamEscrow`to create a new `BeamEscrowContract` and return `EscrowId`.
+
+### Stop Beam
+
+It will call `BeamEscrow.stopBeam` to stop the `BeamEscrowContract`, verify the status is `paused` and the claimable amount is unchanged after the Beam is stopped.
+
+### Restart Beam
+
+It will call `BeamEscrow.restartBeam` to restart the `BeamEscrowContract` and verify the status is `active`. It will also check after some time, the claimable amount is bigger than before the Beam is stopped.
+
+</Steps>
+
+The output will look like this if it is successful:
+
+```
+### 🧑‍💻 Test BeamEscrow Creator Claim Funds Reentrancy 🧑‍💻 ###
+
+Using identity: "default".
+Using identity: "creator".
+
+Buyer Deposit started...
+Using identity: "default".
+DueDate: 1682919717000000000
+blockIndex=6
+createBeamEscrow success! 😃
+ (variant { ok = 4 : nat32 })
+Escrow Id=4
+Sleeping to wait for Beam to update creator's allocation
+Stop beam: escrowId=4
+Using identity: "default".
+(variant { ok = variant { paused } })
+stopBeam expected result 'paused' is passed! 😃
+
+(
+  vec {
+    record {
+      id = 4 : nat32;
+      status = variant { paused };
+      beamType = variant { payment };
+      createdAt = 1_682_918_719_864_039_000 : int;
+      escrowId = 4 : nat32;
+      scheduledEndDate = 1_682_919_717_000_000_000 : int;
+      startDate = 1_682_918_719_864_039_000 : int;
+    };
+  },
+)
+Sleeping to wait for Beam to update creator's allocation
+Beam has stopped correctly 😃
+Restart beam: escrowId=4
+Using identity: "default".
+(variant { ok = variant { active } })
+restartBeam expected result 'active' is passed! 😃
+
+(
+  vec {
+    record {
+      id = 4 : nat32;
+      status = variant { active };
+      beamType = variant { payment };
+      createdAt = 1_682_918_719_864_039_000 : int;
+      escrowId = 4 : nat32;
+      scheduledEndDate = 1_682_919_717_000_000_000 : int;
+      startDate = 1_682_918_719_864_039_000 : int;
+    };
+  },
+)
+Sleeping to wait for Beam to update creator's allocation
+Beam has restarted correctly, claimable after restart is bigger than before it 😃
+```
+
+## Test - Reentrancy Attack
+
+This test will verify that the BeamEscrow Canister is not vulnerable to a reentrancy attack with multiple claims at the same time. It is a relatively sophisticated test and requires a bit of understanding of the BeamFi protocol, Internet Computer and dfx cmd.
+
+Follow [`runTest`](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/test/test-claim-reentrancy.sh#L157) in [`test-claim-reentrancy.sh`](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/test/test-claim-reentrancy.sh) for the main flow.
+
+To run:
+
+```bash
+./backend/test/test-claim-reentrancy.sh
+```

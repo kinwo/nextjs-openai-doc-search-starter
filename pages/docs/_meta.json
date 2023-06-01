@@ -1,0 +1,11 @@
+{
+  "gettingstarted": "Getting Started",
+  "smartcontracts": "Smart Contracts API",
+  "architecture": "Architecture",
+  "frontend": "Web Frontend",
+  "integration": "External Integration",
+  "deploy": "Deploy",
+  "security": "Security",
+  "monitor": "Monitoring and Metrics",
+  "future": "Future"
+}

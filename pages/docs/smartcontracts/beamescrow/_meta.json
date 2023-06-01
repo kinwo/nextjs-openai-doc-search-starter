@@ -1,0 +1,6 @@
+{
+  "simplebeam": "Create Beam EscrowContract",
+  "relationbeam": "Create Relation Beam EscrowContract",
+  "querymybeams": "Query BeamEscrows by owner",
+  "claim": "Claim tokens from EscrowContract"
+}

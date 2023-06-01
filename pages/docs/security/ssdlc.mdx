@@ -1,0 +1,61 @@
+# Secure Software Development Lifecycle (SSDLC)
+
+## Summary
+
+This page showcases the implementation of the [Secure Software Development Lifecycle - (SSDLC)](https://snyk.io/learn/secure-sdlc/) in BeamFi to ensure the security and integrity of the developed software. The following sections provide proof of the company's adherence to SSDLC best practices and methodologies.
+
+## Developer Education on Security
+
+All developers at BeamFi receive comprehensive training on secure coding practices, security principles, and common vulnerabilities. The training material is updated regularly, and developers attend annual refreshers to stay up-to-date with the latest security advancements.
+
+## Automated Security Scan in GitHub
+
+Each pull request is subjected to an automated security scan, identifying potential vulnerabilities at the early stages of development. This is achieved by integrating tools like Snyk with our GitHub repositories to automatically scan the codebase.
+
+## Blockchain Database and Smart Contract Security
+
+The application leverages blockchain technology and smart contracts to ensure data security and user permission checks. The smart contracts are encrypted end-to-end with strong cryptography, making unauthorized access nearly impossible.
+
+## Automated Common Smart Contract Vulnerability Tests
+
+Our SSDLC process includes [automated testing for common smart contract vulnerabilities](/docs/gettingstarted/tests) such as reentrancy vulnerability to analyze smart contract code for potential weaknesses and ensure that they are addressed before deployment.
+
+## Peer Security Code Reviews
+
+As part of the code review process, developers conduct peer security reviews to identify potential security issues and share knowledge on secure coding practices. This collaborative approach helps improve the overall security of the application.
+
+## Security Considerations in All Stages of Software Development
+
+Security is an integral part of every stage of the software development process at BeamFi. This includes initial planning, architecture design, analysis, development, testing and verification, continuous integration and delivery, maintenance, and evolution.
+
+## Access Control in Application Requirements
+
+During the requirement phase, access control is designed to ensure that users can only access their own data, effectively preventing unauthorized data access.
+
+## Development Phase - Static Application Security Testing (SAST)
+
+In the development phase, SAST tools are integrated with Github continuous integration pipelines to automatically scan both frontend and backend code. This includes validation of user inputs, sanitization of data sent back to users, and continuous vulnerability checks in open-source libraries.
+
+## Verification Phase
+
+The verification phase includes automated unit tests to ensure the correctness of the application and its critical paths. Secret tokens, such as Zoom SDK IDs and secret keys, are stored securely in encrypted form using GitHub Secrets and are never included in the source code.
+
+## Maintenance Phase
+
+During the maintenance phase, the company stays up-to-date with the latest trends and news on application security, acting on newly discovered or reported security issues. This includes a proper internal security patching process and, if necessary, temporarily pausing backend smart contracts to protect users. External penetration testing is conducted by EthicalCheck, and our own API health check monitoring agents are deployed to continuously monitor the application and system.
+
+## Adoption of OWASP Best Practices
+
+BeamFi follows OWASP best practices throughout the development process, ensuring a secure and robust application. For instance, use of `node-esapi` library in webapp frontend.
+
+## End-to-end secure communication with Web Crypto API
+
+BeamFi adopts Web Crypto API for client-side end-to-end secure communication of client's data between our system including Zoom meeting ID and password. It makes use of an industry standard strong AES-GCM 256 bits key to provide the maximum user protection in encryption and decryption.
+
+## Triage Approach for Security Issues
+
+A triage approach is adopted to address and track security issues, ensuring that they are resolved before going into production. This helps prioritize security concerns and maintain a secure development environment.
+
+## Conclusion
+
+BeamFi is committed to implementing a Secure Software Development Lifecycle (SSDLC) to guarantee the security and integrity of its software products. This document demonstrates the company's dedication to security and its ongoing efforts to maintain a secure development environment.

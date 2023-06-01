@@ -1,0 +1,188 @@
+# Deploy your own BeamFi Vault
+
+## What is BeamFi Vault
+
+BeamFi is an open-source real-time money-streaming protocol. While you can use the current one deployed to the public IC mainnet directly in your project, you can also deploy your own BeamFi Protocol smart contracts to IC mainnet and customize/enhance it for your purpose.
+
+Each instance of BeamFi smart contracts is called a BeamFi Vault. You can deploy as many BeamFi Vaults as you want to IC mainnet. Each BeamFi Vault is independent of the other and has its own set of smart contracts and properties.
+
+Imagine a new BeamFi Vault that has DAO governance enabled to resolve conflicts between users. Or a new BeamFi Vault that has special integration to a specific DeFi protocol to earn passive income by providing liquidity while money is idle. The possibility is endless.
+
+Soon, the BeamFi app would be enhanced to make connections to different BeamFi Vaults and allow users to switch between them.
+
+[Lean more about BeamFi Vision](/whatis/vision)
+
+## Deploy new BeamFi Vault to Internet Computer IC mainnet
+
+### Pre-requisites
+
+Given that you have followed [Getting Started](/gettingstarted/quickstart) guide, you should have the following installed:
+
+- NodeJS
+- DFX CLI
+- Vessel Package Management Tools
+
+### Setup DFX identity
+
+When you install DFX CLI, it comes with the default identity.
+
+List all identities:
+
+```bash
+dfx identity list
+```
+
+Switch to `default` identity:
+
+```bash
+dfx identity use default
+```
+
+We recommend using a new identity for deployment to IC mainnet so that you can have a better separation of control among your identities.
+
+For example, we create a new identity called `icprod` for deployment to IC mainnet.
+
+```bash
+dfx identity new icprod
+```
+
+Switch to `icprod` identity.
+
+```bash
+dfx identity use icprod
+```
+
+### Prepare Cycles consumed by Canister
+
+Internet Computer uses cycles as the native token to pay for computation. You need to have cycles in your wallet to pay for the computation cost of creating and deploying canisters. To obtain cycles, you need to convert ICP tokens to cycles.
+
+If you come from an Ethereum background, you can think of cycles as gas and ICP tokens as ETH.
+
+[Learn more about ICP and Cycles](https://internetcomputer.org/docs/current/developer-docs/setup/cycles/)
+
+Dfinity provides free Cycles for new developers to get started. You can request free cycles from [IC Developer Portal](https://internetcomputer.org/docs/current/developer-docs/setup/cycles/cycles-faucet).
+
+You can also buy ICP tokens from exchanges like Kraken or Binance, transfer them to your dfx identity and convert them to Cycles.
+
+[Learn more about using Cycles Wallet](https://internetcomputer.org/docs/current/developer-docs/setup/cycles/cycles-wallet)
+
+[Learn more about Converting ICP to Cycles](https://internetcomputer.org/docs/current/developer-docs/setup/cycles/converting_icp_tokens_into_cycles)
+
+### Clean up existing Canisters IDs config
+
+If you have deployed BeamFi Vault before, you may have a `canister_ids.json` file in the project root folder. You can delete it now.
+
+```bash
+rm canister_ids.json
+rm canister_ids_dev.json
+rm canister_ids_prod.json
+rm canister_ids_local.json
+```
+
+Note that `dfx` uses only canister_ids.json. The other files are for our copies of different environments. We delete them for now.
+
+### Create empty canisters
+
+Assuming you have obtained cycles and have them in your wallet, you can now create your own BeamFi Vault in IC mainnet.
+
+We will create empty canisters first so that we can get the canister IDs and update the environment variables required for full deployment.
+
+```bash
+dfx canister --network ic create beam
+dfx canister --network ic create beamescrow
+dfx canister --network ic create beamout
+dfx canister --network ic create monitoragent
+```
+
+Retrieve Canister IDs:
+
+```bash
+dfx canister --network ic id beam
+dfx canister --network ic id beamescrow
+dfx canister --network ic id beamout
+dfx canister --network ic id monitoragent
+```
+
+You can also find them in `canister_ids.json` in the project root folder.
+
+### Update Env Configs
+
+BeamFi uses a number of environment variables to configure the deployment. You can find the list of environment variables in `Env.mo` file.
+
+Export each of the keys below as an environment variable.
+
+E.g. to export `CLIENT_KEY` as an environment variable, run the following command.
+
+```bash
+export CLIENT_KEY=YOUR_SECURE_KEY_STRING
+```
+
+| Key Name                 |                                                                                                       Description                                                                                                       |
+| :----------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| CLIENT_KEY               | HTTPS API Request Client Key. It is used by all http_request http_request_update methods to verify the http client as basic protection. Simply generate a secure random string of about 26 chars using Password Manager |
+| BEAM_ESCROW_CANISTER_ID  |                                                                                  BeamEscrow Canister ID. Get it from the previous step                                                                                  |
+| BEAM_CANISTER_ID         |                                                                                     Beam Canister ID. Get it from the previous step                                                                                     |
+| MONITORAGENT_CANISTER_ID |                                                                                 MonitorAgent Canister ID. Get it from the previous step                                                                                 |
+| BITCOIN_NETWORK          |                                                                              Bitcoin Network to connect to. Leave it to `Regtest` for now                                                                               |
+| ZOOM_SECRET_TOKEN        |                                                                             Zoom Developer Account API Secret Token. Leave it empty for now                                                                             |
+
+Having configured the environment variables, you can now run the script to update Env.mo.
+
+```bash
+./scripts/update-env.sh
+```
+
+Open Env.mo to verify the environment variables are all updated correctly.
+
+### Build & Deploy
+
+This is the final step to deploy your own BeamFi Vault to IC mainnet.
+
+It will compile Motoko files to Wasm files, build canisters and deploy them to IC mainnet.
+
+```bash
+dfx deploy --network ic
+```
+
+At the end of the deployment, you should see the following output.
+
+```bash
+Deploying all canisters.
+All canisters have already been created.
+Building canisters...
+Shrink WASM module size.
+Shrink WASM module size.
+Shrink WASM module size.
+Shrink WASM module size.
+Installing canisters...
+Module hash 8977aca8b61f99f60b038b0b3dc0f621568842f8b3287ea1e530c942986b08e8 is already installed.
+Module hash e44f15e66ecdc09e57deab09dcf547668bf14eadf58754523b73fb959e7e61ca is already installed.
+Module hash 3137a82f1977d1e8628f2ab1d50d271e1807eb38ecd6f25bc82be6b5749a0d03 is already installed.
+Module hash 0709c9fcd601dc3035711f3dbcc50eb10903f088bc2baa33c8d8bade807259d8 is already installed.
+Deployed canisters.
+URLs:
+  Backend canister via Candid interface:
+    beam: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.ic0.app/?id=***
+    beamescrow: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.ic0.app/?id=***
+    beamout: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.ic0.app/?id=***
+    monitoragent: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.ic0.app/?id=***
+```
+
+You can now verify the deployment by visiting the URLs above by replacing \*\*\* with the canister ID.
+
+E.g. if your beam canister ID is `2ekax-oqaaa-aaaah-qc6qa-cai`:
+
+Open this URL in Chrome:  
+https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.ic0.app/?id=2ekax-oqaaa-aaaah-qc6qa-cai
+
+Check that it has the correct Smart Contract API.
+
+If you would like to deploy an individual canister, you can run the following command.
+
+For example, to compile and deploy `beam` canister.
+
+```bash
+dfx deploy --network ic beam
+```
+
+Congratulations! 🎉 You have successfully deployed your own BeamFi Vault to IC mainnet. Well done!

@@ -1,0 +1,45 @@
+# Query Beam
+
+To query Beams, you need to use the `queryBeamByEscrowIds` function. This function takes an array of EscrowIds and returns an array of BeamReadModels. The BeamReadModel is a subset of BeamModelV2. Treat it like a lightweight version of the BeamModelV2 - Value Object pattern.
+
+```js
+public query func queryBeamByEscrowIds(idArray : [EscrowId]) : async [BeamReadModel]
+```
+
+Usually, before calling queryBeamByEscrowIds, you will need to find a list of EscrowId from [BeamEscrow](/docs/smartcontracts/beamescrow/querymybeams) service using the user's identity principle.
+
+Once you have the EscrowId, you can use `dfx` command line to retrieve the Beam streaming status.
+
+For example, with EscrowId 0:
+
+```bash
+dfx canister beam queryBeamByEscrowIds "(vec{0})"
+```
+
+It should return something like this:
+
+```js
+(
+  vec {
+    record {
+      id = 0 : nat32;
+      status = variant { active };
+      beamType = variant { payment };
+      createdAt = 1_682_665_947_905_076_000 : int;
+      escrowId = 0 : nat32;
+      scheduledEndDate = 1_682_714_555_000_000_000 : int;
+      startDate = 1_682_665_947_905_076_000 : int;
+    };
+  },
+)
+```
+
+`active` means it is still being streamed.
+
+The status could be:
+
+```js
+{ #created; #active; #paused; #completed }
+```
+
+When it has finished streaming, the full amount would be available for claiming. The status would be #completed.

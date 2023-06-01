@@ -1,0 +1,42 @@
+# Beam Streaming Mechanism
+
+The core mechanism of streaming all happens in the Beam service canister. It is driven by Internet Computer's scheduling service called Timer API.
+The initial version of BeamFi uses IC Heartbeat to trigger the streaming. However, it is more heavy-weighted and consumes more cycles.
+
+Here is the brief walkthrough of the mechanism:
+
+import { Steps } from 'nextra-theme-docs'
+ 
+<Steps>
+ 
+### Schedule Timer
+ 
+IC Timer API triggers timer() which would schedule to run `processActiveBeams` every `timerBeamPaymentEveryN` secs (30 secs currently).
+
+```js
+system func timer(setGlobalTimer : Nat64 -> ()) : async ()
+```
+
+### Find and Process Active Beams
+
+[Find and process the top 5 active BeamModels](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/Beam.mo#L178) ordered by `#lastProcessedDate`.
+
+```js
+func processActiveBeams() : async ()
+```
+
+### Beam Payment
+
+[Beam streams payment to recipient](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/Beam.mo#L200) over time following `Checks-Effects-Interactions-Rollback` pattern.
+It will calculate the elapsed time since the last payment and update the allocations of each party (BeamEscrow, sender, recipient) accordingly.
+
+One of the reasons to follow `Checks-Effects-Interactions-Rollback` pattern is to avoid the reentrancy attack since another party can interact with the Canister actor during its async processing.
+
+One of the steps it does is to call BeamEscrow Canister to update allocation which is an inter-canister remote async call.
+If the call fails, it will roll back the allocation changes done in the Beam Canister.
+
+```js
+func beamPayment(beam : BeamModelV2) : async ()
+```
+
+</Steps>

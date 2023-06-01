@@ -1,0 +1,69 @@
+# Deploy ICP Ledger to local IC replicas
+
+BeamFi has support for both ICP and XTC tokens.
+This `Getting Started` guide demonstrates how to use BeamFi with ICP tokens.
+
+### Setup Local Canister
+
+This is a special step to lock the local ICP ledger canister ID to ryjl3-tyaaa-aaaaa-aaaba-cai for working with [Plug Wallet](https://plugwallet.ooo/) Local network `window.ic.plug.requestTransfer()` method.
+
+That piece of code is hardcoded to use canister ID `ryjl3-tyaaa-aaaaa-aaaba-cai` regardless of mainnet or local IC.
+
+In order to get Create Beam working with Plug, a pre-configured `canister_ids_local.json` is used instead of letting IC local replica to assign one.
+
+Copy it to `.dfx/local` which is where local IC replicas will store their states and configs.
+
+```
+> mkdir .dfx/local
+> cp canisters_ids_local.json .dfx/local/canister_ids.json
+```
+
+In the next step when the ICP ledger is deployed to IC local replicas, it will use the ID stored in canister_ids.json instead of assigning a new one.
+
+### Install Local ICP Ledger
+
+ICP Ledger is a canister configured in dfx.json as a custom type.
+It will be installed using the WASM file provided by Dfintiy. A sample of WASM can be found at `local/ledger/ledger.wasm`.
+
+The detailed guide is here: https://internetcomputer.org/docs/current/developer-docs/integrations/ledger/ledger-local-setup
+
+Assuming you have followed [`Local Environment`](/docs/gettingstarted/localdev) guide and started a local dfx IC replica.
+
+- Update dfx.json ledger config to use private candid for deploying ledger
+
+Open `dfx.json`  
+Locate ledger -> candid  
+Update the value from:
+
+```
+backend/remote/icp/ledger.public.did
+```
+
+to
+
+```
+backend/remote/icp/ledger.private.did
+```
+
+- Deploy ledger
+
+```
+> dfx identity new minter
+> dfx identity use minter
+> export MINT_ACC=$(dfx ledger account-id)
+> dfx identity use default
+> export LEDGER_ACC=$(dfx ledger account-id)
+> dfx deploy ledger --argument '(record {minting_account = "'${MINT_ACC}'"; initial_values = vec { record { "'${LEDGER_ACC}'"; record { e8s=100_000_000_000 } }; }; send_whitelist = vec {}})'
+```
+
+If there is any error when deploying, check the dfx cmd again to make sure the single quote and double quote are correct.
+
+- Update dfx.json ledger config to use public candid for building with other canisters in the next guide.
+
+Open `dfx.json`  
+Locate ledger -> candid  
+Update the value back to:
+
+```
+backend/remote/icp/ledger.public.did
+```

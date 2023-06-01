@@ -1,0 +1,27 @@
+# 3rd Party Application Penetration Testing
+
+## Summary
+
+BeamFi has developed an application for use with the Zoom platform. This page provides evidence of BeamFi's adherence to security best practices by undergoing periodic 3rd party API penetration testing using [EthicalCheck](https://www.ethicalcheck.dev/). We have also integrated EthicalCheck into our [GitHub Continuous Integration Pipelines](https://github.com/BeamFi/BeamFiProtocol/actions), ensuring that security tests are triggered for every pull request.
+
+## EthicalCheck Penetration Testing
+
+BeamFi has adopted EthicalCheck to perform periodic penetration testing on our API. These tests are designed to uncover vulnerabilities and ensure that BeamFi's API is resistant to cyber attacks. EthicalCheck's security experts simulate real-world attack scenarios and provide a comprehensive report, which includes recommendations for addressing any identified vulnerabilities.
+
+## GitHub Continuous Integration (CI) Pipeline Integration
+
+We have integrated EthicalCheck into our [GitHub CI pipeline](https://github.com/BeamFi/BeamFiProtocol/actions), which enables automated security tests to be triggered every time a pull request is submitted. This practice ensures that our codebase remains secure throughout the development process and that any potential vulnerabilities are identified and addressed promptly.
+
+Screenshots of GitHub Actions Workflow Runs
+
+Below are screenshots of GitHub Actions showing successful workflow runs on API Webhook and Signature.
+
+![Screenshot 1: GitHub Actions Signature Workflow](/EthicalCheck1.png)
+
+![Screenshot 2: GitHub Actions API Webhook Workflow](/EthicalCheck2.png)
+
+These screenshots demonstrate that our GitHub CI pipeline has been set up to automatically trigger EthicalCheck security tests for every pull request. The successful completion of these tests assures that our codebase adheres to the security practices.
+
+## Conclusion
+
+This document provides evidence that BeamFi is committed to ensuring the security of our application by engaging in periodic 3rd party API penetration testing with EthicalCheck and integrating these tests into our GitHub Continuous Integration pipelines.

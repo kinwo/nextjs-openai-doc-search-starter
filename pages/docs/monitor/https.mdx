@@ -1,0 +1,83 @@
+# Metrics and Health HTTPS API
+
+Both [`Beam`](/docs/smartcontracts/beam/create) and [`BeamOut`](/docs/smartcontracts/beamout/unique) canisters expose HTTPS API endpoint /health and /metric for basic health check and metrics collection.
+
+To access the URL, it needs the [`clientKey`](/docs/deploy/deployic#update-env-configs) configured during the deployment.
+
+To monitor the health of Canister continuously, you can use uptime check HTTPS monitoring service to ping the URL periodically for example every 5 minutes depending on the importance of your service. When it fails, notify the DevOps team. For BeamFi main Vault, we use [UptimeRobot](https://uptimerobot.com/) to monitor the health of the canisters.
+
+## BeamOut
+
+For example, for BeamOut canister ID `grcwh-haaaa-aaaah-abvmq-cai`:
+
+### /metric
+
+`https://grcwh-haaaa-aaaah-abvmq-cai.raw.ic0.app/metric?clientKey=$CLIENT_KEY`
+
+Update $CLIENT_KEY to the string you configured during deployment.
+
+Go to URL in Chrome Browser or [Postman](https://www.postman.com/), it should return `json` string like the following with HTTP Status Code 200:
+
+```json
+{
+  "totalURL": "Number of Beam URLs created",
+  "groupByDate": [
+    {
+      "date": "20230421",
+      "numURL": 2
+    },
+    {
+      "date": "20230411",
+      "numURL": 3
+    }
+  ]
+}
+```
+
+### /health
+
+Similarly, for health check, go to `https://grcwh-haaaa-aaaah-abvmq-cai.raw.ic0.app/health?clientKey=$CLIENT_KEY` and it should return `json` string like the following with HTTP Status Code 200:
+
+```json
+{
+  "result": []
+}
+```
+
+## Beam
+
+Given Beam canister ID `gwdqt-kyaaa-aaaah-abvma-cai`:
+
+### /metric
+
+`https://gwdqt-kyaaa-aaaah-abvma-cai.raw.ic0.app/metric?clientKey=$CLIENT_KEY`
+
+Update $CLIENT_KEY to the string you configured during deployment.
+
+Go to the URL in Chrome Browser or [Postman](https://www.postman.com/), it should return `json` string like the following with HTTP Status Code 200:
+
+```json
+{
+  "totalNumBeam": 100,
+  "groupByDate": [
+    {
+      "date": "20230421",
+      "numBeam": 2
+    },
+    {
+      "date": "20230411",
+      "numBeam": 3
+    }
+  ]
+}
+```
+
+### /health
+
+For health check, go to `https://gwdqt-kyaaa-aaaah-abvma-cai.raw.ic0.app/health?clientKey=$CLIENT_KEY` and it should return `json` string like the following with HTTP Status Code 200:
+
+```json
+{
+  "result": []
+}
+```

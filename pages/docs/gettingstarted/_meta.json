@@ -1,0 +1,7 @@
+{
+  "quickstart": "Quick Start",
+  "localdev": "Local Envoironment",
+  "icpledger": "ICP Ledger",
+  "deploy": "Build & Deploy",
+  "tests": "Verify & Test"
+}

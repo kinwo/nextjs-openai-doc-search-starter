@@ -1,0 +1,40 @@
+# Blockchain Patterns
+
+## Checks-Effects-Interactions-Rollback Pattern
+
+The BeamFi service layer follows a blockchain pattern to ensure the integrity of the data and the consistency of the state. The pattern is an enhancement of the [Checks-Effects-Interacions](https://docs.soliditylang.org/en/v0.6.11/security-considerations.html) pattern used in Ethereum Solidity with the addition of `Rollback` specific for Internet Computer blockchain. The reason is Canister code supports asynchronous calls and the state changes (effects) are immediately visible to the other caller before interaction calls are made. Treat it like an atomic transaction commit before async calls were made. Therefore, the Rollback pattern is added to ensure the state is rolled back if the interaction calls fail.
+
+Also, Canister follows [Actor Model](https://internetcomputer.org/capabilities/actor-model) which means its state can only be updated by itself through single thread non-lock based execution through [consensus of blockchain which is about 2 secs](https://internetcomputer.org/capabilities). Only one update message can be processed at one time.
+
+## BeamEscrow - creatorClaimByPrincipal
+
+A great example can be found in [BeamEscrow creatorClaimByPrincipal](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/BeamEscrow.mo#LL288C35-L288C58)
+
+import { Steps } from 'nextra-theme-docs'
+ 
+<Steps>
+ 
+### Check / Validate accounts
+In the beginning, it validates and checks the call owner accounts to make sure they are the owners of the funds. If the accounts are not valid, it will throw an error and the state will not be changed.
+
+### Effects / Update state and persist to store
+
+If the accounts are valid, it will update the state and persist to store. The state is updated before the interaction with other Canisters (which is async calls). It will calculate the amount to be claimed by the creator, assert invariants, validate changes, update the state of BeamEscrowContract and persist to store. A transaction commit will happen here.
+
+### Interactions / Transfer tokens to the caller
+
+This would be the async calls to other Canisters e.g. ICP ledger or XTC ledger. In this case, it will transfer the tokens to the caller.
+
+### Rollback
+
+If the transfer `await` call fails, it will roll back the state (done in Effects) to the previous state.
+
+</Steps>
+
+## Security - Reentrancy Attack
+
+One of the reasons to use the Checks-Effects-Interactions-Rollback pattern is to prevent [Reentrancy Attack](https://solidity-by-example.org/hacks/re-entrancy/). The Reentrancy Attack is a type of attack where the attacker can call the same function multiple times before the previous function call is completed. This is possible because the function as a whole is not atomic. The state is updated before the async calls are made. The attacker can call the function again and again before the async calls are completed. The attacker can drain the funds in the smart contract.
+
+By using the Checks-Effects-Interactions-Rollback pattern, the state is updated before the async calls are made. Therefore, the attacker will not be able to drain the funds in the smart contract by making multiple calls at the same time since the state has changed in the first call to prevent subsequent calls to go further. In `creatorClaimByPrincipal`, it will return earlier with [`Nothing to claim`](https://github.com/BeamFi/BeamFiProtocol/blob/23101f93860397a4360aac7d4a4ac2bcf6e8f32d/backend/service/BeamEscrow.mo#L314) message.
+
+To further demonstrate this potential attack, an [automated test](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/test/test-claim-reentrancy.sh) was created to simulate the attack as part of GitHub CI.

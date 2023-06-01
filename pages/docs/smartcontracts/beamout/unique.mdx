@@ -1,0 +1,62 @@
+# Beam Link API
+
+The best way to experience creating and managing your Beam Links is to use the IC built-in Candid UI.
+
+Candid UI is a web frontend to interact with Canister's public API.
+
+Once you have followed the Getting Started guide to set up your local IC replicas environment and deploy BeamFi, you can find the URL for each deployed canister after running `dfx deploy` command.
+
+![Candid UI URLs](/candidurls.png)
+
+![Sample BeamOut Candid UI](/beamout-candid-ui.png)
+
+## Create a unique Beam Link URL
+
+```js
+public func createBeamOut(amount : TokenAmount, tokenType : TokenType, recipient : Principal, durationNumMins : Nat32)
+  : async Result<BeamOutId, ErrorCode>
+```
+
+`amount` is E8S format with base of 8 zeros meaning e.g 1 ICP = 100000000 E8S. For XTC, it is a base of 12.
+`tokenType` is either `icp` or `xtc`.
+`recipient` is the Principal ID of the recipient which you can get by creating a new identity running the following in command line:
+
+```
+dfx identity new recipient1
+dfx identity use recipient1
+dfx identity get-principal
+```
+
+That will give you a new identity and Principal ID. You can use that Principal ID as the recipient.
+
+`durationNumMins` is the duration of the meeting in minutes. E.g. 60 for 1 hour.
+
+![Create Beam Link](/create-beam-link.png)
+
+This will return a BeamID String in the format:
+
+```
+(variant {ok=840152858})
+```
+
+`840152858` is the BeamID
+
+## Query Beam Link detail by Beam Link ID
+
+Now, you can use the BeamID created above to query the Beam Link detail.
+
+```js
+public query func loadBeamOutById(id : BeamOutId) : async Result<BeamOutModelV4, ErrorCode>
+```
+
+![Query BeamID](/query-beamid.png)
+
+## Create a unique Beam Meeting Link URL
+
+Creating Beam Meeting Link is very similar to creating Beam Link. The only difference is that you need to provide a Zoom meeting ID and password string.
+You will need to create a Zoom account and get the meeting ID and password from the Zoom app. Those Zoom meeting details will be given to the other party to join the meeting with you once they have deposited the amount of tokens you have requested. The buyer will be redirected to BeamFi Meeting App to join the meeting.
+
+```js
+public func createBeamOutMeeting(amount : TokenAmount, tokenType : TokenType, recipient : Principal, durationNumMins : Nat32,
+meetingId : BeamOutMeetingString, meetingPassword : Text) : async Result<BeamOutId, ErrorCode>
+```

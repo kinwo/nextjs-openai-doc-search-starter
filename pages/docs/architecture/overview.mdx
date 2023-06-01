@@ -1,0 +1,26 @@
+# Overview
+
+BeamFi is developed using the Motoko programming language running entirely on Internet Computer Canisters. The beam canister utilizes IC Timer API to drive the canister to process the active beams. For each beam, it computes the creator's claimable allocation of tokens at that moment in time and calls the BeamEscrow canister to update the EscrowContract.
+
+Currently, BeamFi supports two types of tokens: ICP and XTC with the potential of adding more tokens like native Bitcoin or ckBTC (Chain Key Bitcoin) in the future.
+
+## Architecture
+
+In terms of architecture, we applied a clear separation of roles in which Beam canister's role is to work out when, how and what to manipulate on the EscrowContract while carrying no ownership of token e.g. ICP or XTC at all. BeamEscrowt canister on the other hand carries the main role of taking the ownership of tokens deposited by buyers. It requires a much higher level of security measures and asserts a number of invariants to make sure it is solvent in terms of all escrow payments stored for each EscrowContract and its actual ownership of the token in the ICP / XTC ledger.
+
+![BeamFi Architecture](/architecture.png)
+BeamFi Architecture Diagram
+
+## Core Mechanism
+
+Rather than making a payment to the creator's wallet each second (which is costly), the smart contract adjusts the ownership of the funds inside the Canister and unlocks the creator-owned funds for claiming.
+
+Both the buyer and creator can view the live status of the Beam payment through the API as it updates in real-time. Creator can claim funds through API.
+
+## Folder Structure
+
+All backend code is located in the `backend` folder. It contains the following major subfolders:
+
+- `model`: Motoko model types for Beam, BeamOut, Escrow, ICP and persistence store helper.
+- `service`: Motoko Actor Smart Contract where the canister entry point is.
+- `remote`: Motoko modules or Candid did for interacting with remote actors e.g XTC, ICP Ledger

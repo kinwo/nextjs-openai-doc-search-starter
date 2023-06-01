@@ -1,0 +1,14 @@
+# BeamFi Integration with Zoom
+
+The full integration with Zoom is done in 3 parts: BeamFi protocol, BeamFi App, and BeamFi Meeting App (Zoom Web Client).
+The following diagram illustrates the architecture of BeamFi integration with Zoom.
+
+![BeamFi Zoom Integration Architecture](/BeamFiZoomIntegrationArchitecture.png)
+
+[BeamFi Beam canister](https://github.com/BeamFi/BeamFiProtocol/blob/7db9b0267bb6b1d67d71cdabfb57925e8c5ad8de/backend/service/Beam.mo#L353) is integrated with [Zoom using Webhook](https://developers.zoom.us/docs/meeting-sdk/webhooks/#operation/meeting.started) via [IC HTTP Gateway Protocol](https://internetcomputer.org/docs/current/references/ic-interface-spec#http-gateway).
+
+It is done by exposing [`http_request`](https://github.com/BeamFi/BeamFiProtocol/blob/7db9b0267bb6b1d67d71cdabfb57925e8c5ad8de/backend/service/Beam.mo#L353) and [`http_request_update`](https://github.com/BeamFi/BeamFiProtocol/blob/7db9b0267bb6b1d67d71cdabfb57925e8c5ad8de/backend/service/Beam.mo#L375) func in Beam canister.
+
+`http_request_update` func allows Beam canister to receive a Zoom Webhook event when a meeting is started. The event is then processed by the Beam canister which would update the state of the beam and BeamEscrowContract in the BeamEscrow canister.
+
+If you are interested in setting up your own BeamFi integration with Zoom locally, it will require a Zoom developer account and a network tunnel for ingress-as-a-service e.g [Ngrok](https://ngrok.com/) to expose your localhost securely as Webhook URL in Zoom Webhook configs. The scope of it is beyond this documentation. Feel free to [reach out to us](mailto:support@beamfi.app) if you need help with it.

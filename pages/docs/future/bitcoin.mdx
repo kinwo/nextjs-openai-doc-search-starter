@@ -1,0 +1,13 @@
+# Bitcoin Support
+
+Bitcoin support is in our radar from the beginning. Thanks to Internet Computer's [Native Bitcoin integration](https://internetcomputer.org/bitcoin-integration/) and [Chain-Key ECDSA](https://internetcomputer.org/how-it-works/#Chain-key-technology), we are able to support Bitcoin in a trustless way.
+
+If you look closer at the code in BeamFi Protocol, you will find Bitcoin related code because of the inheritance from Content Fly codebase.
+
+However, due to usability issues, we didn't formally support it in the BeamFi app.
+
+One of the issues was it requires users to have a Bitcoin wallet to send and receive Bitcoin.
+
+Another way to provide Bitcoin support is to use [`ckBTC`](https://internetcomputer.org/bitcoin-integration/) which is compliant to [ICRC-1 token standard](https://github.com/dfinity/ICRC-1/blob/main/standards/ICRC-1/README.md) and is supported by most of the IC ecocystem wallets. Most importantly, it is NOT a bridged token. It is a safe option to use with great usability.
+
+We are looking forward to supporting `ckBTC` in BeamFi Protocol and BeamFi app in the future while also keeping the current protocol support for Native Bitcoin.

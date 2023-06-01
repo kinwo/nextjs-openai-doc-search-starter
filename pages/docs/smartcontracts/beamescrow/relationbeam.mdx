@@ -1,0 +1,15 @@
+# Create a Beam EscrowContract with a relation object
+
+Creating BeamEscrow EscrowContract with a relation object is very similar to [createBeamEscrow](/docs/smartcontracts/beamescrow/simplebeam) except that you need to provide the relation object id which would be used as index key in the relation object lookup and matching.
+
+```js
+public shared ({ caller }) func createRelationBeamEscrow(
+  escrowAmount : TokenAmount,
+  tokenType : TokenType,
+  blockIndex : BlockIndex,
+  dueDate : Time,
+  buyerPrincipal : Principal,
+  creatorPrincipal : Principal,
+  objId : BeamRelationObjId
+) : async Result<EscrowId, ErrorCode> {
+```

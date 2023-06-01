@@ -1,0 +1,25 @@
+# Static Application Security Testing
+
+## Summary
+
+This page presents evidence that BeamFi has successfully implemented a [Static Application Security Testing - (SAST)](https://snyk.io/learn/application-security/static-application-security-testing/) process to identify and mitigate security vulnerabilities in our software applications. We have undergone periodic automated SAST tests using [Snyk](https://snyk.io/). One notable example of vulnerability detection and remediation is a Cross-Site Scripting (XSS) issue found in our frontend application. This issue was addressed during the early development stage using the [`node-esapi`](https://github.com/ESAPI/node-esapi) library recommended by [OWASP](https://owasp.org/).
+
+## Periodic Automated SAST Testing Using Snyk
+
+We have set up a scheduled and automated SAST process using the Snyk platform. The platform scans our codebase periodically to identify potential security vulnerabilities. The scan results are sent to the development team, who then address any identified issues.
+
+## Example: Remediation of a Cross-Site Scripting (XSS) Issue
+
+During the early development stage of our frontend application, an XSS issue was identified by the SAST process. The development team promptly addressed the vulnerability using the `node-esapi` library recommended by OWASP. The following screenshots showcase the identification and resolution of the XSS issue:
+
+![Screenshot 1: Snyk report highlighting the XSS issue](/SnykXSSIssue.png)
+
+## Project Coverage
+
+Our SAST process covers all critical components of our software applications, including frontend, backend, and API layers.
+
+![Screenshot 2: Snyk projects](/SnykProjects.png)
+
+## Conclusion
+
+We have effectively implemented a comprehensive SAST process to ensure the security of our software applications. Through the use of periodic automated testing with Snyk, we have been able to identify and remediate potential security vulnerabilities early in the development process. The example of addressing an XSS issue during the early development stage demonstrates the effectiveness of our SAST process in maintaining application security.

@@ -1,0 +1,32 @@
+# Build & Deploy BeamFi to local IC replicas
+
+We will now build and deploy BeamFi Motoko smart contracts to canisters: `beam`, `beamout`, `beamescrow`, `monitoringagent`
+You can find the configs in `dfx.json`.
+
+Run:
+
+```
+> dfx deploy
+```
+
+This cmd will compile and deploy all canisters to the local IC. It will take a while to complete.  
+Once it is built, you can find the canister IDs in .dfx/local/canister_ids.json .
+
+import { Callout } from "nextra-theme-docs"
+
+<Callout type="warning" emoji="⚠️">
+  Be aware that the root folder canister_ids.json stores the canister IDs
+  deployed to IC mainnet.
+</Callout>
+
+<Callout type="info" emoji="ℹ️">
+Note that `deploy` does both build (~compile) and deploy to IC canisters.
+In the future, while you are doing development, you can build one canister using `dfx build`.
+
+e.g compiling only beamout, run:
+
+```
+> dfx build beamout
+```
+
+</Callout>

@@ -1,0 +1,204 @@
+# Setup Continuous Integration / Continuous Delivery pipeline
+
+It is recommended to use a CI/CD pipeline to build and deploy your own BeamFi Vault. The following steps describe how to set up a pipeline using [GitHub Action](https://github.com/BeamFi/BeamFiProtocol/actions).
+
+## Setup GitHub Action
+
+BeamFi Protocol Git repository comes with GitHub Workflow `yml` files which you can use to set up your CI/CD pipeline.
+
+For example, to deploy to the production IC mainnet.
+
+Use [.github/workflows/prod.yml](https://github.com/BeamFi/BeamFiProtocol/blob/main/.github/workflows/prod.yml)
+
+It has a simple workflow with two jobs, one for testing (by running 2 automated test scripts) and one for deployment.
+
+```
+test -> deploy
+```
+
+It is set to be run manually, so you can run it when you want to deploy to IC mainnet.
+You can also configure it to run in every commit / push.
+
+import { Callout } from "nextra-theme-docs"
+
+<Callout type="warning" emoji="⚠️">
+  Note that this workflow assumes you have followed [`Deploy your own BeamFi
+  Vault`](/docs/deploy/deployic) to create and deploy your own BeamFi Vault
+  canisters to IC mainnet already.
+</Callout>
+
+```yml
+name: BeamFi Prod CI / CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16.19.1"
+      - name: Install DFX
+        run: echo y | sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+        env:
+          DFX_VERSION: 0.13.1
+      - run: dfx start --clean --background
+      - name: Download vessel package management
+        run: curl -L -o /usr/local/bin/vessel https://github.com/dfinity/vessel/releases/download/v0.6.3/vessel-linux64
+      - run: chmod +x /usr/local/bin/vessel
+      - name: Configure Escrow related canisters
+        run: ./scripts/configure-local-escrow.sh
+      - name: Update dfx.cfg for test
+        run: npm run test:dfx:updateconfig
+      - name: Update Env used by canister
+        run: ./scripts/update-env.sh
+        env:
+          CLIENT_KEY: ${{ secrets.CLIENT_KEY_PROD }}
+          MONITORAGENT_CANISTER_ID: ${{ secrets.MONITORAGENT_CANISTER_ID_PROD }}
+          BITCOIN_NETWORK: ${{ secrets.BITCOIN_NETWORK_PROD }}
+          ZOOM_SECRET_TOKEN: ${{ secrets.ZOOM_SECRET_TOKEN }}
+      - name: Deploy Ledger in local DFX server
+        run: ./scripts/deploy-local-ledger.sh
+      - name: Revert Ledger Candid to public for building with other canisters
+        run: npm run dfx:ledger:public
+      - name: Deploy canister in local DFX server
+        run: echo yes | dfx deploy
+      - name: Run Beam Escrow Reentrancy test
+        run: ./backend/test/test-claim-reentrancy.sh
+      - name: Run Restart Beam test
+        run: ./backend/test/test-restart-beam.sh
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16.19.1"
+      - name: Setup canisters
+        run: ./scripts/setup-prod.sh
+      - name: Install DFX
+        run: echo y | sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+        env:
+          DFX_VERSION: 0.13.1
+      - name: Add DFX identity and wallets
+        run: ./scripts/add-ic-identity.sh
+        env:
+          DFX_IDENTITY: ${{ secrets.DFX_IDENTITY_PROD }}
+          DFX_WALLETS: ${{ secrets.DFX_WALLETS_PROD }}
+      - name: Download vessel package management
+        run: curl -L -o /usr/local/bin/vessel https://github.com/dfinity/vessel/releases/download/v0.6.3/vessel-linux64
+      - run: chmod +x /usr/local/bin/vessel
+      - name: Update Env used by canister
+        run: ./scripts/update-env.sh
+        env:
+          CLIENT_KEY: ${{ secrets.CLIENT_KEY_PROD }}
+          BEAM_CANISTER_ID: ${{ secrets.BEAM_CANISTER_ID_PROD }}
+          BEAM_ESCROW_CANISTER_ID: ${{ secrets.BEAM_ESCROW_CANISTER_ID_PROD }}
+          MONITORAGENT_CANISTER_ID: ${{ secrets.MONITORAGENT_CANISTER_ID_PROD }}
+          BITCOIN_NETWORK: ${{ secrets.BITCOIN_NETWORK_PROD }}
+          ZOOM_SECRET_TOKEN: ${{ secrets.ZOOM_SECRET_TOKEN }}
+      - name: Build and deploy backend canisters to Internet Computer network
+        run: ./scripts/deploy-canisters.sh
+      - name: Show success mesg
+        run: echo Congratulations! The build and deployment are successful.
+```
+
+## CI / CD scripts
+
+As you can see from the workflow `yml` file, it uses several scripts to setup and deploy including:
+
+| Script                              | Description                                               |
+| :---------------------------------- | :-------------------------------------------------------- |
+| ./scripts/configure-local-escrow.sh | Configure local Beam Escrow canisters for running tests   |
+| ./scripts/update-env.sh             | Update Env.mo using environment variables                 |
+| ./scripts/update-env.sh             | Update Env.mo using environment variables                 |
+| ./scripts/deploy-local-ledger.sh    | Deploy a local ICP Ledger for running tests               |
+| ./scripts/setup-prod.sh             | Setup canisters for production deployment                 |
+| ./scripts/add-ic-identity.sh        | Create DFX identity and wallets for production deployment |
+| ./scripts/deploy-canisters.sh       | Deploy Canisters to IC mainnet                            |
+
+## Automated Test Scripts
+
+| Script                                  | Description                                            |
+| :-------------------------------------- | :----------------------------------------------------- |
+| ./backend/test/test-claim-reentrancy.sh | Test Beam Escrow claim tokens reentrancy vulnerability |
+| ./backend/test/test-restart-beam.sh     | Test Beam stop and restart                             |
+
+### Setup GitHub Actions secrets
+
+Before running the workflow, you need to set up GitHub Secrets for the following environment variables.
+
+| Environment Variable           | Description                                                                              |
+| :----------------------------- | :--------------------------------------------------------------------------------------- |
+| CLIENT_KEY_PROD                | HTTPS API Request Client Key configured in [`Deploy your own BeamFi                      |
+| Vault`](/docs/deploy/deployic) |
+| DFX_IDENTITY_PROD              | DFX identity used to deploy canisters. See below.                                        |
+| DFX_WALLETS_PROD               | DFX wallet used to deploy canisters. See below.                                          |
+| BEAM_CANISTER_ID_PROD          | Canister ID of Beam. Run `dfx canister --network ic ic beam` to find it.                 |
+| BEAM_ESCROW_CANISTER_ID_PROD   | Canister ID of Beam Escrow. Run `dfx canister --network ic ic beamescrow` to find it.    |
+| MONITORAGENT_CANISTER_ID_PROD  | Canister ID of MonitorAgent. Run `dfx canister --network ic ic monitoragent` to find it. |
+| BITCOIN_NETWORK_PROD           | Bitcoin network used for testing. Simply use `Regtest`.                                  |
+| ZOOM_SECRET_TOKEN              | Zoom Developer Account SDK secret token. Leave it empty.                                 |
+
+**Retrieve your DFX identity for DFX_IDENTITY_PROD**
+Assuming you use `icprod` identity, run:
+
+```awk
+awk 'NF {sub(/\r/, ""); printf "%s\\r\\n",$0;}' ~/.config/dfx/identity/icprod/identity.pem
+```
+
+Put the output in GitHub Actions secrets DFX_IDENTITY_PROD.
+
+**Retreive your DFX Wallet for DFX_WALLETS_PROD**
+
+```bash
+cat ~/.config/dfx/identity/icprod/wallets.json
+```
+
+Get the output and replace the identity name with "default".
+
+E.g. if the identity name is icprod, change icprod to default in the JSON.
+
+Output:
+
+```json
+{
+  "identities": {
+    "icprod": {
+      "ic": "xxxxxx"
+    }
+  }
+}
+```
+
+Change to:
+
+```json
+{
+  "identities": {
+    "default": {
+      "ic": "xxxxx"
+    }
+  }
+}
+```
+
+Put the output in GitHub Actions secrets DFX_WALLETS_PROD.
+
+## Run the workflow
+
+Now you have everything ready, run the workflow action manually from your GitHub repo Action page.
+It looks like [BeamFi Main Vault - GitHub Actions](https://github.com/BeamFi/BeamFiProtocol/actions/workflows/prod.yml).
+
+It will take about 5 minutes to complete the workflow.
+
+![BeamFi Production Workflow GitHub Action](/BeamFiProdGithubAction.png)

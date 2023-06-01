@@ -1,0 +1,31 @@
+# Token Solvency Monitor Agent
+
+BeamFi takes token solvency seriously. It has a special canister [`MonitorAgent`](https://github.com/BeamFi/BeamFiProtocol/blob/main/backend/service/MonitorAgent.mo) to monitor the health of [BeamEscrow](/docs/smartcontracts/beamescrow/simplebeam) canisters by checking the supported tokens (ICP and XTC) solvency regularly.
+
+It exposes HTTPS endpoints `/icp` and `/xtc` for HTTPS monitor service to call periodically.
+
+It returns `passed` with HTTP Status 200 when the token solvency is good. Otherwise, it returns HTTP Status 500.
+
+## What is solvency?
+
+In BeamFi, solvency means the amount of the token e.g ICP owned by BeamEscrow canister as reported by ICP Ledger is greater than or equal to the amount of total amount of ICP tokens calculated by adding all Beam Escrow Contracts for ICP.
+
+```
+Verify All Contracts ICP <= Actual ICP tokens owned by BeamEscrow canister
+```
+
+## HTTPS API
+
+Given BeamEscrow canister ID `g7a3p-4qaaa-aaaah-abvnq-cai`:
+
+### ICP Token
+
+`https://g7a3p-4qaaa-aaaah-abvnq-cai.raw.ic0.app/icp?clientKey=$CLIENT_KEY`
+
+### XTC Token
+
+`https://g7a3p-4qaaa-aaaah-abvnq-cai.raw.ic0.app/xtc?clientKey=$CLIENT_KEY`
+
+Update $CLIENT_KEY to the string you [configured during deployment](/docs/deploy/deployic#update-env-configs).
+
+For BeamFi main Vault, we use UptimeRobot to monitor the token solvency continuously.
