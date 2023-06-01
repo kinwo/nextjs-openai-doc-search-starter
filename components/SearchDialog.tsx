@@ -195,10 +195,8 @@ export function SearchDialog() {
       <Dialog open={open}>
         <DialogContent className="sm:max-w-[850px] text-black">
           <DialogHeader>
-            <DialogTitle>OpenAI powered doc search</DialogTitle>
-            <DialogDescription>
-              Build your own ChatGPT style search with Next.js, OpenAI & Supabase.
-            </DialogDescription>
+            <DialogTitle>BeamFi Developer Docs AI Assistant</DialogTitle>
+            <DialogDescription>Ask any questions about BeamFi</DialogDescription>
             <hr />
             <button className="absolute top-0 right-2 p-2" onClick={() => setOpen(false)}>
               <X className="h-4 w-4 dark:text-gray-100" />
@@ -268,11 +266,9 @@ export function SearchDialog() {
                   hover:bg-slate-100 dark:hover:bg-gray-600
                   rounded border border-slate-200 dark:border-slate-600
                   transition-colors"
-                  onClick={(_) =>
-                    setSearch('Create a table called profiles with fields id, name, email')
-                  }
+                  onClick={(_) => setSearch('What is BeamFi?')}
                 >
-                  Create a table called profiles with fields id, name, email
+                  What is BeamFi?
                 </button>
               </div>
             </div>
