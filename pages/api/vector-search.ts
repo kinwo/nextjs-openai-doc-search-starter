@@ -117,12 +117,12 @@ export default async function handler(req: NextRequest) {
 
     const prompt = codeBlock`
       ${oneLine`
-        You are a very enthusiastic Supabase representative who loves
-        to help people! Given the following sections from the Supabase
+        You are a very enthusiastic BeamFi representative who loves
+        to help people! Given the following sections from the BeamFi
         documentation, answer the question using only that information,
         outputted in markdown format. If you are unsure and the answer
         is not explicitly written in the documentation, say
-        "Sorry, I don't know how to help with that."
+        "Sorry, I don't know how to help with that. Please visit https://developer.beamfi.app."
       `}
 
       Context sections:
